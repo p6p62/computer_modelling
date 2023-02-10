@@ -20,12 +20,12 @@ public:
 				max = v;
 		}
 
-		const float step{ (max - min) / (float)parts_count };
+		const double step{ (max - min) / (double)parts_count };
 		histogram.clear();
 		histogram.resize(parts_count);
 		for (const T& v : data)
 		{
-			++histogram[std::min<size_t>((v - min) / step, parts_count - 1)];
+			++histogram[std::min<size_t>(static_cast<size_t>((v - min) / step), static_cast<size_t>(parts_count - 1))];
 		}
 	}
 };

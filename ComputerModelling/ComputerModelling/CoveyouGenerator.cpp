@@ -7,8 +7,8 @@ CoveyouGenerator::CoveyouGenerator(long initial_seed, short degree_of_two) : _cu
 		throw std::invalid_argument("Ошибка, должно выполняться initial_seed % 4 == 2");
 }
 
-long CoveyouGenerator::next()
+double CoveyouGenerator::next()
 {
 	_current_value = (_current_value * (_current_value + 1)) % _degree;
-	return _current_value;
+	return _current_value / (double)_degree;
 }
