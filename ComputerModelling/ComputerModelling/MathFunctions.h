@@ -28,5 +28,7 @@ public:
 			++histogram[std::min<size_t>(static_cast<size_t>((v - min) / step), static_cast<size_t>(parts_count - 1))];
 		}
 	}
+
+	static std::vector<double> separate_on_parts(unsigned int parts_count, double a = 0, double b = 1);
 };
 

@@ -2,20 +2,7 @@
 #include "CoveyouGenerator.h"
 #include "MathFunctions.h"
 #include <algorithm>
-
-void print_histogram(const std::vector<int>& histogram, int max_width = 70)
-{
-	constexpr int OFFSET{ 15 };
-	size_t data_count{ 0 };
-	for (int v : histogram)
-		data_count += v;
-	for (int value : histogram)
-	{
-		std::string s;
-		s = "|" + std::string(static_cast<size_t>((max_width - OFFSET) * ((double)value / data_count) * histogram.size()), '=');
-		std::cout << s << ' ' << value << std::endl;
-	}
-}
+#include <matplot/matplot.h>
 
 int main()
 {
@@ -25,14 +12,37 @@ int main()
 	constexpr long SEED{ 10 };
 	constexpr long DEGREE{ 12 };
 
+	// генерация случайных чисел
 	CoveyouGenerator generator{ SEED, DEGREE };
-
-	std::vector<double> random_numbers;
-	random_numbers.reserve(ELEMENTS_COUNT);
+	std::vector<double> random_numbers(ELEMENTS_COUNT);
 	for (size_t i = 0; i < ELEMENTS_COUNT; i++)
-		random_numbers.push_back(generator.next());
+		random_numbers[i] = generator.next();
 
+	// расчёт данных статистической функции распределения
 	std::vector<int> histogram;
 	MathFunctions::get_histogram(random_numbers, HISTOGRAM_PARTS_COUNT, histogram);
-	print_histogram(histogram);
+	std::vector<double> emripical_distribution_function;
+	for (size_t i{ 0 }, counter{ 0 }; i < histogram.size(); ++i)
+	{
+		counter += histogram[i];
+		emripical_distribution_function.push_back(counter / (double)ELEMENTS_COUNT);
+	}
+
+	// подготовка графика
+	auto histogram_graph{ matplot::hist(random_numbers, HISTOGRAM_PARTS_COUNT) };
+	histogram_graph->bin_edges(MathFunctions::separate_on_parts(HISTOGRAM_PARTS_COUNT));
+	histogram_graph->normalization(matplot::histogram::normalization::pdf);
+	matplot::hold(true);
+	auto distribution_function_graph{ matplot::fplot(
+		[&emripical_distribution_function](double x) -> double
+		{
+			size_t index{(size_t)(x * HISTOGRAM_PARTS_COUNT)};
+			if (index < 0)
+				index = 0;
+			else if (index > HISTOGRAM_PARTS_COUNT - 1)
+				index = HISTOGRAM_PARTS_COUNT - 1;
+			return emripical_distribution_function[index];
+		}, std::array<double, 2>{0, 1}) };
+	distribution_function_graph->line_width(3);
+	matplot::show();
 }
