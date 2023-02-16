@@ -30,5 +30,10 @@ public:
 	}
 
 	static std::vector<double> separate_on_parts(unsigned int parts_count, double a = 0, double b = 1);
+
+	static double moment_initial(const std::vector<double>& data, int moment_number);
+	static double moment_central(const std::vector<double>& data, int moment_number, const double* math_expectation = nullptr);
+	static double math_expectation(const std::vector<double>& data);
+	static double variance(const std::vector<double>& data, const double* math_expectation = nullptr);
 };
 

@@ -12,6 +12,9 @@ int main()
 	constexpr long SEED{ 10 };
 	constexpr long DEGREE{ 12 };
 
+	setlocale(LC_ALL, "Russian");
+	setlocale(LC_NUMERIC, "English");
+
 	// генерация случайных чисел
 	CoveyouGenerator generator{ SEED, DEGREE };
 	std::vector<double> random_numbers(ELEMENTS_COUNT);
@@ -27,6 +30,13 @@ int main()
 		counter += histogram[i];
 		emripical_distribution_function.push_back(counter / (double)ELEMENTS_COUNT);
 	}
+
+	// вывод статистических характеристик
+	const double math_expect{ MathFunctions::math_expectation(random_numbers) };
+	std::cout << "Математическое ожидание: " << math_expect << std::endl;
+	std::cout << "Дисперсия: " << MathFunctions::variance(random_numbers, &math_expect) << std::endl;
+	std::cout << "Второй начальный момент: " << MathFunctions::moment_initial(random_numbers, 2) << std::endl;
+	std::cout << "Третий начальный момент: " << MathFunctions::moment_initial(random_numbers, 3) << std::endl;
 
 	// подготовка графика
 	auto histogram_graph{ matplot::hist(random_numbers, HISTOGRAM_PARTS_COUNT) };
