@@ -7,6 +7,10 @@ CoveyouGenerator::CoveyouGenerator(long initial_seed, short degree_of_two) : _cu
 		throw std::invalid_argument("Ошибка, должно выполняться initial_seed % 4 == 2");
 }
 
+CoveyouGenerator::CoveyouGenerator() : CoveyouGenerator(SEED_DEFAULT, DEGREE_DEFAULT)
+{
+}
+
 double CoveyouGenerator::next()
 {
 	_current_value = (_current_value * (_current_value + 1)) & _delimeter;

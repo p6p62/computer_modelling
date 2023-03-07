@@ -1,5 +1,6 @@
 #pragma once
 #include <vector>
+#include <functional>
 
 class MathFunctions
 {
@@ -35,5 +36,10 @@ public:
 	static double moment_central(const std::vector<double>& data, int moment_number, const double* math_expectation = nullptr);
 	static double math_expectation(const std::vector<double>& data);
 	static double variance(const std::vector<double>& data, const double* math_expectation = nullptr);
+
+	static std::vector<double> get_empirical_distribution_function(const std::vector<double>& data, const std::vector<double>& intervals);
+	static double uniform_distribution_function(double x, double a = 0, double b = 1);
+
+	static double pearson_criteria(const std::vector<double>& data, const std::vector<double>& intervals, const std::function<double(double)>& theoretical_distribution_function);
 };
 
