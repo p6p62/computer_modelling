@@ -2,6 +2,8 @@
 #include <math.h>
 #include <algorithm>
 #include <map>
+#include <set>
+#include <boost/math/special_functions/factorials.hpp>
 
 std::vector<double> MathFunctions::separate_on_parts(unsigned int parts_count, double a, double b)
 {
@@ -47,6 +49,11 @@ double MathFunctions::math_expectation(const std::vector<double>& data)
 double MathFunctions::variance(const std::vector<double>& data, const double* math_expectation)
 {
 	return moment_central(data, 2, math_expectation);
+}
+
+double MathFunctions::combination(unsigned long m, unsigned long n)
+{
+	return boost::math::factorial<double>(n) / (boost::math::factorial<double>(m) * boost::math::factorial<double>(n - m));
 }
 
 std::vector<double> MathFunctions::get_empirical_distribution_function(const std::vector<double>& data, const std::vector<double>& intervals)
@@ -119,10 +126,10 @@ double MathFunctions::pearson_criteria(const std::vector<double>& data, const st
 		theoretical_histogram[i - 1] = theoretical_distribution_function(intervals[i]) - theoretical_distribution_function(intervals[i - 1]);
 
 	double result{ 0 };
-	for (size_t i{ 0 }; i < theoretical_histogram.size(); ++i)
+	for (size_t i{ 0 }; i < real_normalized_histogram.size(); ++i)
 	{
 		double delta{ theoretical_histogram[i] - real_normalized_histogram[i] };
-		result += delta * delta / theoretical_histogram[i];
+		result += delta * delta / real_normalized_histogram[i];
 	}
 	return result * data.size();
 }
@@ -147,4 +154,55 @@ double MathFunctions::colmogorov_criteria(const std::vector<double>& data, const
 	}
 
 	return max_difference * sqrt(data.size());
+}
+
+static double collector_probability_density_function(double length, unsigned int digits_count)
+{
+	double sum{ 0 };
+	for (size_t i = 0; i < digits_count - 1; i++)
+	{
+		sum += pow(-1, i) * MathFunctions::combination(i, digits_count - 1) * pow(digits_count - 1 - i, length - 1);
+	}
+	return sum / pow(digits_count, length - 1);
+}
+
+static double collector_distribution_function(double length, unsigned int digits_count)
+{
+	double result{ 0 };
+	for (size_t i{ digits_count }; i <= static_cast<size_t>(length); ++i)
+		result += collector_probability_density_function(i, digits_count);
+	return result;
+}
+
+double MathFunctions::collector_criteria(const std::vector<double>& data, unsigned int digit_count)
+{
+	const size_t DATA_SIZE{ data.size() };
+
+	// получение набора данных с длинами последовательностей из выборки
+	std::vector<unsigned long long> length_sequence_values;
+	std::set<unsigned int> digits;
+	size_t i{ 0 };
+	while (i < DATA_SIZE)
+	{
+		unsigned long long sequence_length{ 0 };
+		while (i < DATA_SIZE && digits.size() < digit_count)
+		{
+			digits.insert(data[i++] * digit_count);
+			++sequence_length;
+		}
+		if (digits.size() >= digit_count)
+			length_sequence_values.push_back(sequence_length);
+		digits.clear();
+	}
+
+	// подготовка интервалов и проверка длин по критерию Хи-квадрат
+	std::vector<double> lengths{ length_sequence_values.begin(), length_sequence_values.end() };
+	std::set<unsigned int> different_lengths{ length_sequence_values.begin(), length_sequence_values.end() };
+	std::vector<double> intervals{ different_lengths.begin(), different_lengths.end() };
+	std::sort(intervals.begin(), intervals.end());
+
+	double pearson_value{ MathFunctions::pearson_criteria(lengths, intervals,
+		[digit_count](double r) -> double { return collector_distribution_function(r, digit_count); }) };
+
+	return pearson_value;
 }

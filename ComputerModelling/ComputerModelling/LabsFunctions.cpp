@@ -54,8 +54,8 @@ void lab1_program()
 
 void lab2_program()
 {
-	constexpr long RANDOM_DATA_SIZE{ 10000 };
-	constexpr int INTERVALS_COUNT{ 40 };
+	constexpr long RANDOM_DATA_SIZE{ 8000 };
+	const int INTERVALS_COUNT{ static_cast<int>(1 + log2(RANDOM_DATA_SIZE)) };
 
 	CoveyouGenerator generator;
 	std::vector<double> random_data(RANDOM_DATA_SIZE);
@@ -74,8 +74,13 @@ void lab2_program()
 	const double colmogorov_value{ MathFunctions::colmogorov_criteria(random_data, uniform_distribution_function) };
 	std::cout << "Значение критерия Колмогорова: " << colmogorov_value << std::endl;
 
+	// оценка по критерию коллекционера
+	constexpr int COLLECTED_DIGITS_COUNT{ 24 };
+	const double collector_value{ MathFunctions::collector_criteria(random_data, COLLECTED_DIGITS_COUNT) };
+	std::cout << "Значение критерия коллекционера: " << collector_value << std::endl;
+
 	// график
-	auto histogram_graph{ matplot::hist(random_data, INTERVALS_COUNT) };
+	/*auto histogram_graph{ matplot::hist(random_data, INTERVALS_COUNT) };
 	histogram_graph->bin_edges(intervals);
-	matplot::show();
+	matplot::show();*/
 }

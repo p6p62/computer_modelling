@@ -46,7 +46,8 @@ public:
 		for (size_t i{ 1 }, data_counter{ 0 }; i < intervals.size(); ++i)
 		{
 			const double right_border{ intervals[i] };
-			while (data_counter < sorted_data.size() && sorted_data[data_counter] < right_border)
+			constexpr double ACCURATION{ 0.000001 };
+			while (data_counter < sorted_data.size() && sorted_data[data_counter] < right_border + ACCURATION)
 			{
 				++histogram[i - 1];
 				++data_counter;
@@ -60,6 +61,8 @@ public:
 	static double moment_central(const std::vector<double>& data, int moment_number, const double* math_expectation = nullptr);
 	static double math_expectation(const std::vector<double>& data);
 	static double variance(const std::vector<double>& data, const double* math_expectation = nullptr);
+
+	static double combination(unsigned long m, unsigned long n);
 
 	/// <summary>
 	/// Получение функции распределения, рассчитанной для набора интервалов
@@ -82,7 +85,7 @@ public:
 	/// </summary>
 	/// <param name="data">Данные для расчёта</param>
 	/// <param name="intervals">Точки-границы интервалов. Первый элемент - начало первого интервала, второй - конец первого интервала/начало второго интервала, третий - конец второго интервала..., последний - конец последнего интервала</param>
-	/// <param name="theoretical_distribution_function">Теоретическая функция распределения, с помощью которой будет производиться сравнение</param>
+	/// <param name="theoretical_distribution_function">Теоретическая функция распределения вероятности, с помощью которой будет производиться сравнение</param>
 	/// <returns>Значение Хи-квадрат</returns>
 	static double pearson_criteria(const std::vector<double>& data, const std::vector<double>& intervals, const std::function<double(double)>& theoretical_distribution_function);
 
@@ -93,5 +96,6 @@ public:
 	/// <param name="theoretical_distribution_function">Теоретическая функция распределения</param>
 	/// <returns>Значение критерия Колмогорова</returns>
 	static double colmogorov_criteria(const std::vector<double>& data, const std::function<double(double)>& theoretical_distribution_function);
-};
 
+	static double collector_criteria(const std::vector<double>& data, unsigned int digit_count);
+};
