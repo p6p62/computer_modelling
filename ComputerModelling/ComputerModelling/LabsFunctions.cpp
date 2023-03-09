@@ -153,6 +153,18 @@ void lab3_program()
 		{
 			return lab3_variant6_distribution_function(x);
 		}, std::array<double, 2>{LEFT_BORDER, RIGHT_BORDER}) };
+
+	std::vector<double> emripical_distribution_function{ MathFunctions::get_empirical_distribution_function(random_data, histogram_borders) };
+	auto distribution_function_graph{ matplot::fplot(
+		[&emripical_distribution_function](double x) -> double
+		{
+			size_t index{(size_t)(x * INTERVALS_COUNT / (RIGHT_BORDER - LEFT_BORDER))};
+			if (index < 0)
+				index = 0;
+			else if (index > INTERVALS_COUNT - 1)
+				index = INTERVALS_COUNT - 1;
+			return emripical_distribution_function[index];
+		}, std::array<double, 2>{LEFT_BORDER, RIGHT_BORDER}) };
 	histogram_graph->bin_edges(MathFunctions::separate_on_parts(INTERVALS_COUNT, LEFT_BORDER, RIGHT_BORDER));
 	matplot::show();
 }
