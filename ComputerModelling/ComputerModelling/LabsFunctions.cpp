@@ -4,6 +4,7 @@
 #include "MathFunctions.h"
 #include <algorithm>
 #include <matplot/matplot.h>
+#include <chrono>
 
 void lab1_program()
 {
@@ -83,4 +84,75 @@ void lab2_program()
 	/*auto histogram_graph{ matplot::hist(random_data, INTERVALS_COUNT) };
 	histogram_graph->bin_edges(intervals);
 	matplot::show();*/
+}
+
+static double lab3_variant6_distribution_function(double x)
+{
+	double result{ 0 };
+	if (x >= 0)
+	{
+		if (x < 0.3)
+			result = 0.2 * pow(10, x) - 0.2;
+		else if (x < 0.7)
+			result = 1.5 * x - 0.25;
+		else if (x < 1.5)
+			result = 0.25 * x + 0.625;
+		else
+			result = 1;
+	}
+	return result;
+}
+
+static double lab3_variant6_inverse_distribution_function(double x)
+{
+	double result{ 0 };
+	if (x >= lab3_variant6_distribution_function(0))
+	{
+		if (x < lab3_variant6_distribution_function(0.3))
+			result = log10(x * 5 + 1);
+		else if (x < lab3_variant6_distribution_function(0.7))
+			result = (x + 0.25) / 1.5;
+		else if (x <= lab3_variant6_distribution_function(1.5))
+			result = 4 * (x - 0.625);
+		else
+			result = 1.5;
+	}
+	return result;
+}
+
+void lab3_program()
+{
+	constexpr int ELEMENTS_COUNT{ 50000 };
+	constexpr int INTERVALS_COUNT{ 25 };
+	constexpr double LEFT_BORDER{ 0 };
+	constexpr double RIGHT_BORDER{ 1.5 };
+
+	// получение случайных данных
+	CoveyouGenerator generator;
+	std::vector<double> random_data(ELEMENTS_COUNT);
+	for (double& v : random_data)
+		v = lab3_variant6_inverse_distribution_function(generator.next());
+
+	// вывод статистических характеристик
+	const double math_expect{ MathFunctions::math_expectation(random_data) };
+	std::cout << "Математическое ожидание: " << math_expect << std::endl;
+	std::cout << "Дисперсия: " << MathFunctions::variance(random_data, &math_expect) << std::endl;
+
+	// проверка по критерию Пирсона
+	const double pearson_value{ MathFunctions::pearson_criteria(random_data, MathFunctions::separate_on_parts(INTERVALS_COUNT, LEFT_BORDER, RIGHT_BORDER), lab3_variant6_distribution_function) };
+	std::cout << "Значение критерия Пирсона: " << pearson_value << std::endl;
+
+	// график
+	auto histogram_graph{ matplot::hist(random_data, INTERVALS_COUNT) };
+	histogram_graph->bin_edges(MathFunctions::separate_on_parts(INTERVALS_COUNT, LEFT_BORDER, RIGHT_BORDER));
+	histogram_graph->normalization(matplot::histogram::normalization::probability);
+	matplot::hold(true);
+
+	std::vector<double> histogram_borders{ MathFunctions::separate_on_parts(INTERVALS_COUNT, LEFT_BORDER, RIGHT_BORDER) };
+	auto histogram_graph2{ matplot::fplot([&histogram_borders](double x) -> double
+		{
+			return lab3_variant6_distribution_function(x);
+		}, std::array<double, 2>{LEFT_BORDER, RIGHT_BORDER}) };
+	histogram_graph->bin_edges(MathFunctions::separate_on_parts(INTERVALS_COUNT, LEFT_BORDER, RIGHT_BORDER));
+	matplot::show();
 }
