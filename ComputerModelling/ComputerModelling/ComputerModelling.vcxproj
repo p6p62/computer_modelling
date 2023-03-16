@@ -143,11 +143,13 @@
     <ClCompile Include="ComputerModelling.cpp" />
     <ClCompile Include="CoveyouGenerator.cpp" />
     <ClCompile Include="LabsFunctions.cpp" />
+    <ClCompile Include="MarsagliaBrayGenerator.cpp" />
     <ClCompile Include="MathFunctions.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CoveyouGenerator.h" />
     <ClInclude Include="LabsFunctions.h" />
+    <ClInclude Include="MarsagliaBrayGenerator.h" />
     <ClInclude Include="MathFunctions.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
