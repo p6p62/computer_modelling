@@ -140,6 +140,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="BetaDistributionGenerator.cpp" />
     <ClCompile Include="ComputerModelling.cpp" />
     <ClCompile Include="CoveyouGenerator.cpp" />
     <ClCompile Include="LabsFunctions.cpp" />
@@ -147,6 +148,7 @@
     <ClCompile Include="MathFunctions.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="BetaDistributionGenerator.h" />
     <ClInclude Include="CoveyouGenerator.h" />
     <ClInclude Include="LabsFunctions.h" />
     <ClInclude Include="MarsagliaBrayGenerator.h" />

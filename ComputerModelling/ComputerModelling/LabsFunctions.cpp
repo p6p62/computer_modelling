@@ -2,6 +2,7 @@
 #include <iostream>
 #include "CoveyouGenerator.h"
 #include "MarsagliaBrayGenerator.h"
+#include "BetaDistributionGenerator.h"
 #include "MathFunctions.h"
 #include <algorithm>
 #include <matplot/matplot.h>
@@ -206,6 +207,64 @@ void lab4_program()
 	// оценка по критерию Колмогорова
 	const double colmogorov_value{ MathFunctions::colmogorov_criteria(random_numbers,
 		[](double x) -> double { return MathFunctions::normal_distribution_function(x, MATH_EXPECTATION, VARIANCE); }) };
+	std::cout << "Значение критерия Колмогорова: " << colmogorov_value << std::endl;
+
+	// подготовка графика
+	auto histogram_graph{ matplot::hist(random_numbers, HISTOGRAM_PARTS_COUNT) };
+	histogram_graph->bin_edges(MathFunctions::separate_on_parts(HISTOGRAM_PARTS_COUNT, LEFT_GRAPH_BORDER, RIGHT_GRAPH_BORDER));
+	histogram_graph->normalization(matplot::histogram::normalization::pdf);
+	matplot::hold(true);
+	auto distribution_function_graph{ matplot::fplot(
+		[&emripical_distribution_function](double x) -> double
+		{
+			size_t index{(size_t)((x - LEFT_GRAPH_BORDER) * HISTOGRAM_PARTS_COUNT / (RIGHT_GRAPH_BORDER - LEFT_GRAPH_BORDER))};
+			if (index < 0)
+				index = 0;
+			else if (index > HISTOGRAM_PARTS_COUNT - 1)
+				index = HISTOGRAM_PARTS_COUNT - 1;
+			return emripical_distribution_function[index];
+		}, std::array<double, 2>{LEFT_GRAPH_BORDER, RIGHT_GRAPH_BORDER}) };
+	distribution_function_graph->line_width(3);
+	matplot::show();
+}
+
+void lab5_program()
+{
+	constexpr int ELEMENTS_COUNT{ 5000 };
+	constexpr int HISTOGRAM_PARTS_COUNT{ 15 };
+
+	constexpr double P_PARAMETER{ 0.5 };
+	constexpr double M_PARAMETER{ 0.5 };
+
+	// генерация случайных чисел
+	CoveyouGenerator uniform_generator;
+	BetaDistributionGenerator generator{ P_PARAMETER, M_PARAMETER, [&uniform_generator]() -> double { return uniform_generator.next(); } };
+	std::vector<double> random_numbers(ELEMENTS_COUNT);
+	for (size_t i = 0; i < ELEMENTS_COUNT; i++)
+		random_numbers[i] = generator.next();
+
+	// расчёт данных статистической функции распределения
+	std::vector<int> histogram;
+	MathFunctions::get_histogram(random_numbers, HISTOGRAM_PARTS_COUNT, histogram);
+	std::vector<double> emripical_distribution_function;
+	for (size_t i{ 0 }, counter{ 0 }; i < histogram.size(); ++i)
+	{
+		counter += histogram[i];
+		emripical_distribution_function.push_back(counter / (double)ELEMENTS_COUNT);
+	}
+
+	// вывод статистических характеристик
+	const double math_expect{ MathFunctions::math_expectation(random_numbers) };
+	std::cout << "Математическое ожидание: " << math_expect << std::endl;
+	std::cout << "Дисперсия: " << MathFunctions::variance(random_numbers, &math_expect) << std::endl;
+
+	constexpr double LEFT_GRAPH_BORDER{ 0 };
+	constexpr double RIGHT_GRAPH_BORDER{ 1 };
+
+	// оценка по критерию Колмогорова
+	// TODO
+	const double colmogorov_value{ MathFunctions::colmogorov_criteria(random_numbers,
+		[](double x) -> double { return MathFunctions::normal_distribution_function(x, P_PARAMETER, M_PARAMETER); }) };
 	std::cout << "Значение критерия Колмогорова: " << colmogorov_value << std::endl;
 
 	// подготовка графика

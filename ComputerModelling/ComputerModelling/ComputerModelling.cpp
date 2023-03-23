@@ -9,5 +9,6 @@ int main()
 	//lab1_program();
 	//lab2_program();
 	//lab3_program();
-	lab4_program();
+	//lab4_program();
+	lab5_program();
 }
