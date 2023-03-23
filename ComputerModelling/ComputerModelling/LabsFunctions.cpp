@@ -323,7 +323,7 @@ void lab5_logarithmically_normal_distribution(int elements_count, int histogram_
 	std::cout << "Äèñïåðñèÿ: " << MathFunctions::variance(random_numbers, &math_expect) << std::endl;
 
 	constexpr double LEFT_GRAPH_BORDER{ -2 };
-	constexpr double RIGHT_GRAPH_BORDER{ 6 };
+	constexpr double RIGHT_GRAPH_BORDER{ 15 };
 
 	// îöåíêà ïî êðèòåðèþ Êîëìîãîðîâà
 	// !!!ÄÎÏÈÑÀÒÜ ÔÓÍÊÖÈÞ ÐÀÑÏÐÅÄÅËÅÍÈß ËÎÃÀÐÈÔÌÈ×ÅÑÊÈ ÍÎÐÌÀËÜÍÎÃÎ ÇÀÊÎÍÀ!!!
