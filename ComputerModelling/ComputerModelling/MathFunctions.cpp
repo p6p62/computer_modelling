@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <map>
 #include <set>
+#include <numbers>
 #include <boost/math/special_functions/factorials.hpp>
 
 std::vector<double> MathFunctions::separate_on_parts(unsigned int parts_count, double a, double b)
@@ -205,4 +206,14 @@ double MathFunctions::collector_criteria(const std::vector<double>& data, unsign
 		[digit_count](double r) -> double { return collector_distribution_function(r, digit_count); }) };
 
 	return pearson_value;
+}
+
+double MathFunctions::normal_probability_density_function(double x, double math_expectation, double variance)
+{
+	return exp(-pow((x - math_expectation), 2) / (2 * variance)) / (sqrt(2 * std::numbers::pi * variance));
+}
+
+double MathFunctions::normal_distribution_function(double x, double math_expectation, double variance)
+{
+	return 0.5 * (1 + std::erf((x - math_expectation) / sqrt(2 * variance)));
 }

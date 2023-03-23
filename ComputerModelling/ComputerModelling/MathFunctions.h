@@ -98,4 +98,8 @@ public:
 	static double colmogorov_criteria(const std::vector<double>& data, const std::function<double(double)>& theoretical_distribution_function);
 
 	static double collector_criteria(const std::vector<double>& data, unsigned int digit_count);
+
+	static double normal_probability_density_function(double x, double math_expectation, double variance);
+
+	static double normal_distribution_function(double x, double math_expectation, double variance);
 };
