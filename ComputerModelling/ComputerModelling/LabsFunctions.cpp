@@ -264,7 +264,14 @@ void lab5_program()
 	// оценка по критерию Колмогорова
 	// TODO
 	const double colmogorov_value{ MathFunctions::colmogorov_criteria(random_numbers,
-		[](double x) -> double { return MathFunctions::normal_distribution_function(x, P_PARAMETER, M_PARAMETER); }) };
+		[](double x) -> double
+		{
+			constexpr double DELTA{1e-2};
+			double result{ 0 };
+			for (double i{ 0 }; i <= 1; i += DELTA)
+				result += pow(x, P_PARAMETER - 1) * pow(1 - x, M_PARAMETER - 1) / std::beta(P_PARAMETER, M_PARAMETER);
+			return result * DELTA;
+		}) };
 	std::cout << "Значение критерия Колмогорова: " << colmogorov_value << std::endl;
 
 	// подготовка графика
