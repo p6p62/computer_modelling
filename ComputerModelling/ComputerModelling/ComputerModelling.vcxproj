@@ -146,6 +146,7 @@
     <ClCompile Include="LabsFunctions.cpp" />
     <ClCompile Include="MarsagliaBrayGenerator.cpp" />
     <ClCompile Include="MathFunctions.cpp" />
+    <ClCompile Include="RaindropFall.cpp" />
     <ClCompile Include="ShootingCompetitions.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -154,6 +155,7 @@
     <ClInclude Include="LabsFunctions.h" />
     <ClInclude Include="MarsagliaBrayGenerator.h" />
     <ClInclude Include="MathFunctions.h" />
+    <ClInclude Include="RaindropFall.h" />
     <ClInclude Include="ShootingCompetitions.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

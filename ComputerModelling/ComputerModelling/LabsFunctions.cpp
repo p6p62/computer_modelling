@@ -5,9 +5,9 @@
 #include "BetaDistributionGenerator.h"
 #include "MathFunctions.h"
 #include "ShootingCompetitions.h"
+#include "RaindropFall.h"
 #include <algorithm>
 #include <matplot/matplot.h>
-#include <vector>
 
 void lab1_program()
 {
@@ -396,5 +396,67 @@ void lab6_program()
 	std::vector<double> borders{ MathFunctions::separate_on_parts(HISTOGRAM_PART_COUNT, *minmax_pair.first, *minmax_pair.second) };
 	auto histogram_graph{ matplot::hist(winning_probability, HISTOGRAM_PART_COUNT) };
 	histogram_graph->bin_edges(borders);
+	matplot::show();
+}
+
+void lab7_program()
+{
+	constexpr int DROP_TEST_COUNT{ 8000 };
+	constexpr int INITIAL_HEIGHT{ 15 };
+	constexpr double P_DOWN{ 0.5 };
+	constexpr double P_UP{ 0.1 };
+	constexpr double P_LEFT{ 0.2 };
+	constexpr double P_RIGHT{ 0.2 };
+
+	// моделирование падений
+	std::vector<long> falling_times;
+	RaindropFall::test_falling(DROP_TEST_COUNT, INITIAL_HEIGHT, P_DOWN, P_UP, P_LEFT, P_RIGHT, falling_times);
+
+	// вывод статистических характеристик
+	std::vector<double> falling_times_in_double{ falling_times.begin(), falling_times.end() };
+	const double math_expect{ MathFunctions::math_expectation(falling_times_in_double) };
+	const double variance{ MathFunctions::variance(falling_times_in_double, &math_expect) };
+	std::cout << "Математическое ожидание: " << math_expect << std::endl;
+	std::cout << "Дисперсия: " << variance << std::endl;
+
+	// подсчёт параметров гамма-распределения
+	const double THETA{ variance / math_expect };
+	const double K{ math_expect / THETA };
+	std::cout << "Параметры аппроксимирующего гамма-распределения: " << std::endl;
+	std::cout << "k: " << K << std::endl;
+	std::cout << "theta: " << THETA << std::endl;
+
+	// интервалы для гистограммы
+	auto minmax_pair{ std::minmax_element(falling_times.begin(), falling_times.end()) };
+	double min{ (double)*minmax_pair.first };
+	double max{ (double)*minmax_pair.second };
+	const int HISTOGRAM_PART_COUNT{ (int)(max - min) / 2 };
+	std::vector<double> borders{ MathFunctions::separate_on_parts(HISTOGRAM_PART_COUNT, min, max) };
+
+	std::vector<double> emripical_distribution_function{ MathFunctions::get_empirical_distribution_function(falling_times_in_double, borders) };
+
+	// график
+	auto histogram_graph{ matplot::hist(falling_times) };
+	histogram_graph->bin_edges(borders);
+	histogram_graph->normalization(matplot::histogram::normalization::pdf);
+	matplot::hold(true);
+
+	auto gamma_theoretical_graph{ matplot::fplot(
+		[K, THETA](double x) -> double {return MathFunctions::gamma_probability_density_function(x, K, THETA); },
+		std::array<double, 2>{min, max}) };
+	gamma_theoretical_graph->line_width(3);
+
+	matplot::figure();
+	auto distribution_function_graph{ matplot::fplot(
+		[min, max, HISTOGRAM_PART_COUNT, &emripical_distribution_function](double x) -> double
+		{
+			size_t index{(size_t)((x - min) * HISTOGRAM_PART_COUNT / (max - min))};
+			if (index < 0)
+				index = 0;
+			else if (index > HISTOGRAM_PART_COUNT - 1)
+				index = HISTOGRAM_PART_COUNT - 1;
+			return emripical_distribution_function[index];
+		}, std::array<double, 2>{min, max}) };
+	distribution_function_graph->line_width(3);
 	matplot::show();
 }

@@ -217,3 +217,11 @@ double MathFunctions::normal_distribution_function(double x, double math_expecta
 {
 	return 0.5 * (1 + std::erf((x - math_expectation) / sqrt(2 * variance)));
 }
+
+double MathFunctions::gamma_probability_density_function(double x, double k_parameter, double theta_parameter)
+{
+	double result{ 0 };
+	if (x > 0)
+		result = pow(x, k_parameter - 1) * exp(-x / theta_parameter) / (pow(theta_parameter, k_parameter) * tgamma(k_parameter));
+	return result;
+}

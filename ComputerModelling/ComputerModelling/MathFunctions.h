@@ -102,4 +102,6 @@ public:
 	static double normal_probability_density_function(double x, double math_expectation, double variance);
 
 	static double normal_distribution_function(double x, double math_expectation, double variance);
+
+	static double gamma_probability_density_function(double x, double k_parameter, double theta_parameter);
 };
