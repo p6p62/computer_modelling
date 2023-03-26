@@ -33,6 +33,9 @@
     <ClCompile Include="BetaDistributionGenerator.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
+    <ClCompile Include="ShootingCompetitions.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CoveyouGenerator.h">
@@ -48,6 +51,9 @@
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
     <ClInclude Include="BetaDistributionGenerator.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="ShootingCompetitions.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
   </ItemGroup>

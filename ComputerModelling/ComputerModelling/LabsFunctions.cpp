@@ -4,9 +4,10 @@
 #include "MarsagliaBrayGenerator.h"
 #include "BetaDistributionGenerator.h"
 #include "MathFunctions.h"
+#include "ShootingCompetitions.h"
 #include <algorithm>
 #include <matplot/matplot.h>
-#include <chrono>
+#include <vector>
 
 void lab1_program()
 {
@@ -357,4 +358,43 @@ void lab5_program()
 
 	//lab5_beta_distribution(ELEMENTS_COUNT, HISTOGRAM_PARTS_COUNT);
 	lab5_logarithmically_normal_distribution(ELEMENTS_COUNT, HISTOGRAM_PARTS_COUNT);
+}
+
+void lab6_program()
+{
+	constexpr int SELECTION_SIZE{ 20000 };
+	constexpr int TESTS_COUNT_IN_COMPETITION{ 300 };
+	constexpr int BULLETS_COUNT{ 5 };
+	//const std::vector<double> HIT_PROBABILITIES{ 0.6, 0.55, 0.62, 0.65, 0.58, 0.59 };
+	const std::vector<double> HIT_PROBABILITIES{ 0.16, 0.05, 0.12, 0.85, 0.08, 0.09 };
+	constexpr int TRACKED_SHOOTER{ 3 };
+
+	// набор веро€тностей выигрыша
+	int rand_seed{ 120 }; // дл€ получени€ повторимых, но различных данных с последовательности опытов
+	std::vector<double> winning_probability;
+	for (size_t i{ 0 }; i < SELECTION_SIZE; ++i, ++rand_seed)
+	{
+		winning_probability.push_back(ShootingCompetitions::test_shooting(TESTS_COUNT_IN_COMPETITION, BULLETS_COUNT, HIT_PROBABILITIES, TRACKED_SHOOTER, rand_seed));
+	}
+
+	// расчЄт доверительного интервала и статистических характеристик
+	constexpr double quantile_infinity_0_95{ 1.645 };
+	const double math_expectation{ MathFunctions::math_expectation(winning_probability) };
+	const double fixed_variance{ (double)SELECTION_SIZE / (SELECTION_SIZE - 1) * MathFunctions::variance(winning_probability, &math_expectation) };
+	const double mean_square_deviation{ sqrt(fixed_variance) };
+	const double delta{ mean_square_deviation * quantile_infinity_0_95 / sqrt(SELECTION_SIZE) };
+	std::cout << "ћатематическое ожидание: " << math_expectation << std::endl;
+	std::cout << "»справленна€ выборочна€ дисперси€: " << fixed_variance << std::endl;
+	std::cout << std::format("ƒоверительный интервал с 0.95 надЄжностью: [{:.6f}, {:.6f}]\n", math_expectation - delta, math_expectation + delta);
+
+	// проверка аналитическим решением
+	std::cout << "¬еро€тность выигрыша, рассчитанна€ аналитически: " << ShootingCompetitions::test_shooting_by_mathematical(BULLETS_COUNT, HIT_PROBABILITIES, TRACKED_SHOOTER) << std::endl;
+
+	// график
+	constexpr int HISTOGRAM_PART_COUNT{ 25 };
+	auto minmax_pair{ std::minmax_element(winning_probability.begin(), winning_probability.end()) };
+	std::vector<double> borders{ MathFunctions::separate_on_parts(HISTOGRAM_PART_COUNT, *minmax_pair.first, *minmax_pair.second) };
+	auto histogram_graph{ matplot::hist(winning_probability, HISTOGRAM_PART_COUNT) };
+	histogram_graph->bin_edges(borders);
+	matplot::show();
 }
