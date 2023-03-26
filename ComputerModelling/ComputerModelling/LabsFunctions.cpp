@@ -419,6 +419,19 @@ void lab7_program()
 	std::cout << "Математическое ожидание: " << math_expect << std::endl;
 	std::cout << "Дисперсия: " << variance << std::endl;
 
+	// определение функциональной зависимости времени от высоты
+	std::map<int, long> approximate_height_to_time_function;
+	constexpr int HEIGHT_MIN{ 4 }, HEIGHT_MAX{ 35 };
+	std::vector<long> times_for_function;
+	std::vector<double> temp(DROP_TEST_COUNT);
+	for (int h{ HEIGHT_MIN }; h <= HEIGHT_MAX; ++h)
+	{
+		RaindropFall::test_falling(DROP_TEST_COUNT, h, P_DOWN, P_UP, P_LEFT, P_RIGHT, times_for_function);
+		temp.assign(times_for_function.begin(), times_for_function.end());
+		double mean_fall_time{ MathFunctions::math_expectation(temp) };
+		approximate_height_to_time_function.insert({ h, mean_fall_time });
+	}
+
 	// подсчёт параметров гамма-распределения
 	const double THETA{ variance / math_expect };
 	const double K{ math_expect / THETA };
@@ -458,5 +471,20 @@ void lab7_program()
 			return emripical_distribution_function[index];
 		}, std::array<double, 2>{min, max}) };
 	distribution_function_graph->line_width(3);
+
+	matplot::figure();
+	std::vector<int> x, y;
+	for (const auto& it : approximate_height_to_time_function)
+	{
+		x.push_back(it.first);
+		y.push_back(it.second);
+	}
+	std::vector<size_t> indices(x.size());
+	for (size_t i{ 0 }; i < indices.size(); ++i)
+		indices[i] = i;
+	auto height_to_time_function_graph{ matplot::plot(x, y, "-o") };
+	height_to_time_function_graph->marker_indices(indices);
+	height_to_time_function_graph->marker_size(7);
+	height_to_time_function_graph->line_width(3);
 	matplot::show();
 }
