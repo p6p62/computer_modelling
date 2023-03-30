@@ -488,3 +488,37 @@ void lab7_program()
 	height_to_time_function_graph->line_width(3);
 	matplot::show();
 }
+
+void lab8_program()
+{
+	constexpr double ACCURACY{ 5e-2 };
+	constexpr double QUANTILE_INFINITY_0_95{ 1.645 }; // достоверность задаётся значением квантиля
+	constexpr int SELECTION_FIRST_TEST_SIZE{ 1700 };
+
+	constexpr int DROP_TEST_COUNT{ 20 };
+	constexpr int INITIAL_HEIGHT{ 15 };
+	constexpr double P_DOWN{ 0.5 };
+	constexpr double P_UP{ 0.1 };
+	constexpr double P_LEFT{ 0.2 };
+	constexpr double P_RIGHT{ 0.2 };
+
+	// выполнение пробного эксперимента для оценки дисперсии
+	std::vector<long> falling_times(DROP_TEST_COUNT);
+	std::vector<double> falling_times_math_expectations(SELECTION_FIRST_TEST_SIZE);
+	for (double& m : falling_times_math_expectations)
+	{
+		RaindropFall::test_falling(DROP_TEST_COUNT, INITIAL_HEIGHT, P_DOWN, P_UP, P_LEFT, P_RIGHT, falling_times);
+		m = std::accumulate(falling_times.begin(), falling_times.end(), 0) / falling_times.size();
+	}
+
+	double variance{ MathFunctions::variance(falling_times_math_expectations) };
+	const size_t MIN_SELECTION_SIZE{ static_cast<size_t>(pow(QUANTILE_INFINITY_0_95, 2) * variance / pow(ACCURACY, 2)) };
+
+	// TODO
+	//std::cout <<  << std::endl;
+
+	// график
+	auto histogram_graph{ matplot::hist(falling_times_math_expectations) };
+	histogram_graph->normalization(matplot::histogram::normalization::pdf);
+	matplot::show();
+}
