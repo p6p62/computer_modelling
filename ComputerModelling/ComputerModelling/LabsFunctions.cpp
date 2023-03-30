@@ -489,11 +489,11 @@ void lab7_program()
 	matplot::show();
 }
 
-void lab8_program()
+void lab8_math_expectation()
 {
 	constexpr double ACCURACY{ 5e-2 };
 	constexpr double QUANTILE_INFINITY_0_95{ 1.645 }; // достоверность задаётся значением квантиля
-	constexpr int SELECTION_FIRST_TEST_SIZE{ 1700 };
+	constexpr int SELECTION_FIRST_TEST_SIZE{ 50 };
 
 	constexpr int DROP_TEST_COUNT{ 20 };
 	constexpr int INITIAL_HEIGHT{ 15 };
@@ -504,21 +504,125 @@ void lab8_program()
 
 	// выполнение пробного эксперимента для оценки дисперсии
 	std::vector<long> falling_times(DROP_TEST_COUNT);
+	auto start_it{ falling_times.begin() };
+	auto end_it{ falling_times.end() };
 	std::vector<double> falling_times_math_expectations(SELECTION_FIRST_TEST_SIZE);
 	for (double& m : falling_times_math_expectations)
 	{
 		RaindropFall::test_falling(DROP_TEST_COUNT, INITIAL_HEIGHT, P_DOWN, P_UP, P_LEFT, P_RIGHT, falling_times);
-		m = std::accumulate(falling_times.begin(), falling_times.end(), 0) / falling_times.size();
+		m = std::accumulate(start_it, end_it, 0) / falling_times.size();
 	}
 
-	double variance{ MathFunctions::variance(falling_times_math_expectations) };
-	const size_t MIN_SELECTION_SIZE{ static_cast<size_t>(pow(QUANTILE_INFINITY_0_95, 2) * variance / pow(ACCURACY, 2)) };
+	// определение минимально необходимого размера выборки и проведение дополнительных итераций по необходимости
+	const double ESTIMATED_VARIANCE{ MathFunctions::variance(falling_times_math_expectations) };
+	const size_t MIN_SELECTION_SIZE{ static_cast<size_t>(pow(QUANTILE_INFINITY_0_95, 2) * ESTIMATED_VARIANCE / pow(ACCURACY, 2)) };
+	if (MIN_SELECTION_SIZE > SELECTION_FIRST_TEST_SIZE)
+	{
+		falling_times_math_expectations.resize(MIN_SELECTION_SIZE);
+		for (size_t i{ SELECTION_FIRST_TEST_SIZE }; i < falling_times_math_expectations.size(); ++i)
+		{
+			RaindropFall::test_falling(DROP_TEST_COUNT, INITIAL_HEIGHT, P_DOWN, P_UP, P_LEFT, P_RIGHT, falling_times);
+			falling_times_math_expectations[i] = std::accumulate(start_it, end_it, 0) / falling_times.size();
+		}
+	}
 
-	// TODO
-	//std::cout <<  << std::endl;
+	const double MATH_EXPECTATION{ MathFunctions::math_expectation(falling_times_math_expectations) };
+	const double VARIANCE{ MathFunctions::variance(falling_times_math_expectations, &MATH_EXPECTATION) * SELECTION_FIRST_TEST_SIZE / (SELECTION_FIRST_TEST_SIZE - 1) };
+
+	std::cout << "Заданный уровень надёжности: 0.95\n";
+	std::cout << std::format("Заданная точность: {}\n", ACCURACY);
+	std::cout << std::format("Размер выборки в пробном эксперименте: {}\n", SELECTION_FIRST_TEST_SIZE);
+	std::cout << std::format("Оценка дисперсии: {}\n", ESTIMATED_VARIANCE);
+	std::cout << std::format("Минимально необходимый размер выборки: {}\n\n", MIN_SELECTION_SIZE);
+
+	std::cout << std::format("Математическое ожидание выборочных средних после выполнения эксперимента:\n{}\n", MATH_EXPECTATION);
+	std::cout << std::format("Дисперсия выборочных средних после выполнения эксперимента:\n{}\n", VARIANCE);
+	std::cout << std::format("Доверительный интервал:\n[{}, {}]\n", MATH_EXPECTATION - ACCURACY, MATH_EXPECTATION + ACCURACY);
 
 	// график
+	auto min_max{ std::minmax_element(falling_times_math_expectations.begin(), falling_times_math_expectations.end()) };
 	auto histogram_graph{ matplot::hist(falling_times_math_expectations) };
 	histogram_graph->normalization(matplot::histogram::normalization::pdf);
+	matplot::hold(true);
+	auto approximate_normal_distribution_graph{ matplot::fplot(
+		[MATH_EXPECTATION, VARIANCE](double x) -> double
+		{
+			return MathFunctions::normal_probability_density_function(x, MATH_EXPECTATION, VARIANCE);
+		}, std::array<double, 2>{*min_max.first,* min_max.second}) };
+	approximate_normal_distribution_graph->line_width(3);
+}
+
+void lab8_variance()
+{
+	constexpr double ACCURACY{ 2 };
+	constexpr double QUANTILE_INFINITY_0_95{ 1.645 }; // достоверность задаётся значением квантиля
+	constexpr int SELECTION_FIRST_TEST_SIZE{ 50 };
+
+	constexpr int DROP_TEST_COUNT{ 20 };
+	constexpr int INITIAL_HEIGHT{ 15 };
+	constexpr double P_DOWN{ 0.5 };
+	constexpr double P_UP{ 0.1 };
+	constexpr double P_LEFT{ 0.2 };
+	constexpr double P_RIGHT{ 0.2 };
+
+	// выполнение пробного эксперимента для оценки дисперсии
+	std::vector<long> falling_times(DROP_TEST_COUNT);
+	std::vector<double> falling_times_double(DROP_TEST_COUNT);
+	auto start_it{ falling_times.begin() };
+	auto end_it{ falling_times.end() };
+	std::vector<double> falling_times_variances(SELECTION_FIRST_TEST_SIZE);
+	for (double& m : falling_times_variances)
+	{
+		RaindropFall::test_falling(DROP_TEST_COUNT, INITIAL_HEIGHT, P_DOWN, P_UP, P_LEFT, P_RIGHT, falling_times);
+		falling_times_double.assign(start_it, end_it);
+		m = MathFunctions::variance(falling_times_double);
+	}
+
+	// определение минимально необходимого размера выборки и проведение дополнительных итераций по необходимости
+	const double ESTIMATED_VARIANCE{ MathFunctions::math_expectation(falling_times_variances) };
+	const double Q{ ACCURACY / ESTIMATED_VARIANCE };
+	const size_t MIN_SELECTION_SIZE{ static_cast<size_t>(1 + 2 * pow(QUANTILE_INFINITY_0_95 / Q, 2)) };
+	if (MIN_SELECTION_SIZE > SELECTION_FIRST_TEST_SIZE)
+	{
+		falling_times_variances.resize(MIN_SELECTION_SIZE);
+		for (size_t i{ SELECTION_FIRST_TEST_SIZE }; i < falling_times_variances.size(); ++i)
+		{
+			RaindropFall::test_falling(DROP_TEST_COUNT, INITIAL_HEIGHT, P_DOWN, P_UP, P_LEFT, P_RIGHT, falling_times);
+			falling_times_double.assign(start_it, end_it);
+			falling_times_variances[i] = MathFunctions::variance(falling_times_double);
+		}
+	}
+
+	const double MATH_EXPECTATION_FOR_VARIANCES{ MathFunctions::math_expectation(falling_times_variances) };
+	const double VARIANCE_FOR_VARIANCES{ MathFunctions::variance(falling_times_variances, &MATH_EXPECTATION_FOR_VARIANCES) * SELECTION_FIRST_TEST_SIZE / (SELECTION_FIRST_TEST_SIZE - 1) };
+
+	std::cout << "Заданный уровень надёжности: 0.95\n";
+	std::cout << std::format("Заданная точность: {}\n", ACCURACY);
+	std::cout << std::format("Размер выборки в пробном эксперименте: {}\n", SELECTION_FIRST_TEST_SIZE);
+	std::cout << std::format("Оценка дисперсии: {}\n", ESTIMATED_VARIANCE);
+	std::cout << std::format("Минимально необходимый размер выборки: {}\n\n", MIN_SELECTION_SIZE);
+
+	std::cout << std::format("Математическое ожидание выборочной дисперсии после выполнения эксперимента:\n{}\n", MATH_EXPECTATION_FOR_VARIANCES);
+	std::cout << std::format("Дисперсия выборочных дисперсий после выполнения эксперимента:\n{}\n", VARIANCE_FOR_VARIANCES);
+	std::cout << std::format("Доверительный интервал:\n[{}, {}]\n", MATH_EXPECTATION_FOR_VARIANCES - ACCURACY, MATH_EXPECTATION_FOR_VARIANCES + ACCURACY);
+
+	// график
+	auto min_max{ std::minmax_element(falling_times_variances.begin(), falling_times_variances.end()) };
+	auto histogram_graph{ matplot::hist(falling_times_variances) };
+	histogram_graph->normalization(matplot::histogram::normalization::pdf);
+	matplot::hold(true);
+	auto approximate_normal_distribution_graph{ matplot::fplot(
+		[MATH_EXPECTATION_FOR_VARIANCES, VARIANCE_FOR_VARIANCES](double x) -> double
+		{
+			return MathFunctions::normal_probability_density_function(x, MATH_EXPECTATION_FOR_VARIANCES, VARIANCE_FOR_VARIANCES);
+		}, std::array<double, 2>{*min_max.first,* min_max.second}) };
+	approximate_normal_distribution_graph->line_width(3);
+}
+
+void lab8_program()
+{
+	lab8_math_expectation();
+	matplot::figure();
+	lab8_variance();
 	matplot::show();
 }
