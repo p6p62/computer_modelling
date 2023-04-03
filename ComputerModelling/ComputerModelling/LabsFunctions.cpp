@@ -626,3 +626,11 @@ void lab8_program()
 	lab8_variance();
 	matplot::show();
 }
+
+void lab9_program()
+{
+	// TODO
+	constexpr int WORKERS_INTENSITY{ 40 };
+	constexpr int CASHIER_PERFORMANCE{ 30 };
+	constexpr size_t CASHIER_COUNT{ 2 };
+}

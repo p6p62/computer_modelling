@@ -8,3 +8,4 @@ void lab5_program();
 void lab6_program();
 void lab7_program();
 void lab8_program();
+void lab9_program();

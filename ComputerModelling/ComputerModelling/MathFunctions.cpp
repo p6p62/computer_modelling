@@ -225,3 +225,13 @@ double MathFunctions::gamma_probability_density_function(double x, double k_para
 		result = pow(x, k_parameter - 1) * exp(-x / theta_parameter) / (pow(theta_parameter, k_parameter) * tgamma(k_parameter));
 	return result;
 }
+
+double MathFunctions::exponential_probability_density_function(double x, double lambda_parameter)
+{
+	return lambda_parameter * exp(-lambda_parameter * x);
+}
+
+double MathFunctions::exponential_probability_distribution_function(double x, double lambda_parameter)
+{
+	return 1 - exp(-lambda_parameter * x);
+}
