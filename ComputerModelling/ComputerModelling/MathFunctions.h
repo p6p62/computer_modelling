@@ -108,4 +108,6 @@ public:
 	static double exponential_probability_density_function(double x, double lambda_parameter);
 
 	static double exponential_probability_distribution_function(double x, double lambda_parameter);
+
+	static double exponential_random_value(double lambda_parameter);
 };

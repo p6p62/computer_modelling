@@ -235,3 +235,8 @@ double MathFunctions::exponential_probability_distribution_function(double x, do
 {
 	return 1 - exp(-lambda_parameter * x);
 }
+
+double MathFunctions::exponential_random_value(double lambda_parameter)
+{
+	return -log((double)rand() / RAND_MAX + 1e-8) / lambda_parameter;
+}

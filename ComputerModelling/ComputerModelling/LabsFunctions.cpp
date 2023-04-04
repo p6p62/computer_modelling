@@ -6,6 +6,7 @@
 #include "MathFunctions.h"
 #include "ShootingCompetitions.h"
 #include "RaindropFall.h"
+#include "QueueingSystem.h"
 #include <algorithm>
 #include <matplot/matplot.h>
 
@@ -633,4 +634,10 @@ void lab9_program()
 	constexpr int WORKERS_INTENSITY{ 40 };
 	constexpr int CASHIER_PERFORMANCE{ 30 };
 	constexpr size_t CASHIER_COUNT{ 2 };
+
+	const std::function<double()> request_time_generator{ []() -> double {return MathFunctions::exponential_random_value(WORKERS_INTENSITY); } };
+	const std::function<double()> service_time_generator{ []() -> double {return MathFunctions::exponential_random_value(CASHIER_PERFORMANCE); } };
+
+	QueueingSystem accounting{ CASHIER_COUNT, request_time_generator, service_time_generator };
+	accounting.run(8);
 }
